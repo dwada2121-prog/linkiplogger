@@ -4,7 +4,7 @@ from flask import Flask, request, redirect, Response
 
 app = Flask(__name__)
 
-WEBHOOK = https://discord.com/api/webhooks/1571455646560288778/NxJFzUWwmTXQMqoaIYe1E17RnO4emiPuIBmyzScnLOflK2Z6DsTj41tEzB0Jd3vmH4M3
+WEBHOOK = "https://discord.com/api/webhooks/1571455646560288778/NxJFzUWwmTXQMqoaIYe1E17RnO4emiPuIBmyzScnLOflK2Z6DsTj41tEzB0Jd3vmH4M3"
 
 
 def get_ip(req):
